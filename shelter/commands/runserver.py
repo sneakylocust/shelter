@@ -129,7 +129,7 @@ class RunServer(BaseCommand):
                 "Init %d worker(s) for interface '%s' (%s:%d)",
                 processes, name, host, port)
         elif interface.unix_socket:
-            sockets = tornado.netutil.bind_unix_socket(interface.unix_socket)
+            sockets = [tornado.netutil.bind_unix_socket(interface.unix_socket)]
             self.logger.info(
                 "Init %d worker(s) for interface '%s' (%s)",
                 processes, name, unix_socket)
