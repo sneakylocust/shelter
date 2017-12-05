@@ -36,7 +36,7 @@ or
 
     SHELTER_SETTINGS_MODULE=myapp.settings shelter-admin
 
-Ussage
+Usage
 ------
 
 ::

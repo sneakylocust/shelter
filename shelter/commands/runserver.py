@@ -113,17 +113,30 @@ class RunServer(BaseCommand):
         and add them into list of the management command processes.
         """
         interface = tornado_app.settings['interface']
-        name, processes, host, port = (
+        name, processes, host, port, unix_socket = (
             interface.name, interface.processes,
-            interface.host, interface.port)
+            interface.host, interface.port, interface.unix_socket)
         if processes <= 0:
             processes = tornado.process.cpu_count()
 
-        self.logger.info(
-            "Init %d worker(s) for interface '%s' (%s:%d)",
-            processes, name, host, port)
+        # port is mandatory, host is not
+        if port and unix_socket:
+            raise ValueError(
+                'Interface MUST NOT listen on both IP socket and UNIX socket')
+        elif port:
+            sockets = tornado.netutil.bind_sockets(port, host)
+            self.logger.info(
+                "Init %d worker(s) for interface '%s' (%s:%d)",
+                processes, name, host, port)
+        elif interface.unix_socket:
+            sockets = tornado.netutil.bind_unix_socket(interface.unix_socket)
+            self.logger.info(
+                "Init %d worker(s) for interface '%s' (%s)",
+                processes, name, unix_socket)
+        else:
+            raise ValueError(
+                'Interface MUST listen either on IP socket or UNIX socket')
 
-        sockets = tornado.netutil.bind_sockets(port, host)
         for dummy_i in six.moves.range(processes):
             self.workers.append(
                 Worker(
